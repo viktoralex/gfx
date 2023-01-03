@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Hexagonal terrain generator</title>
+    <style>
+      body { margin: 0; background: #000;}
+    </style>
+
+    <script async src="https://cdn.jsdelivr.net/npm/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.145.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.145.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+
+    <script type="module">
+      import * as THREE from 'three';
+      import WebGL from 'three/addons/capabilities/WebGL.js';
+      import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+      import { FirstPersonControls } from 'three/addons/controls/FirstPersonControls.js';
+      import { FlyControls } from 'three/addons/controls/FlyControls.js';
+      import { SimplexNoise } from 'three/addons/math/SimplexNoise.js';
+      import Stats from 'three/addons/libs/stats.module.js';
+      import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+
+      let worldHexagonWidth = 20;
+
+      const hexagonCountFromHexWidth = function(n) {
+        return 2*n + (n-1) * (3*n-2) - 1;
+      };
+
+      let hexagonCount = hexagonCountFromHexWidth(worldHexagonWidth);
+
+      //let hexagonCount = 48;
+      const hexagonRadius = 1.999;
+      let hexagonMaxHeight = 30;
+
+      let heightmapNoiseScale = 0.012;
+
+      let ticker = 0.000;
+      let tickSpeed = 0.1;
+
+      let waterBeachHeight = 0.2;
+      let beachGrassHeight = 0.4;
+      let grassMountainHeight = 0.8;
+
+      let waterLevel = 0.3;
+      let waveGranularity = 35;
+      let waveScale = 1;
+      let waterOpacity = true;
+
+      // Water colors
+      let waterShallowColor = new THREE.Color(0x73e1ff);
+      let waterDeepColor = new THREE.Color(0x0e1a82);
+      // Ground colors
+      let underwaterColor = new THREE.Color(0x122275);
+      let beachColor = new THREE.Color(0xb8b26a);
+      let grassColor = new THREE.Color(0x1e5e07);
+      let mountainColor = new THREE.Color(0xadb9ba);
+
+      // Width between two faces of hexagon
+      const hexagonWidth = (Math.sqrt(3) / 2) * 2*hexagonRadius;
+
+      let simplex = new SimplexNoise();
+      const simplexNoise = function(x, y) {
+        const noise = (
+          simplex.noise(
+            x*heightmapNoiseScale,
+            y*heightmapNoiseScale
+          )+ 1
+        ) / 2;
+        return noise;
+      }
+
+      const sinCosNoise = function(x, y) {
+        return (Math.sin(x/2)+1)/4 + (Math.cos(y/2)+1)/4;
+      }
+
+      const randomNoise = function() {
+        return Math.random();
+      }
+
+      // Hexes spread over a square (size of square dictated by `hexagonCount`)
+      //const getHexIterator = function*() {
+      //  const width = Math.ceil(Math.sqrt(hexagonCount));
+      //  const height = Math.floor(Math.sqrt(hexagonCount));
+      //  const xOffset = width * hexagonWidth / 2;
+      //  const zOffset = height * (1.5*hexagonRadius) / 2;
+      //
+      //  let i = 0;
+      //  for (let z = 0; z < height; z++) {
+      //    for (let x = 0; x < width; x++) {
+      //      yield [
+      //        i,
+      //        x * hexagonWidth + (z % 2 != 0 ? hexagonWidth/2 : 0) - xOffset,
+      //        z * (1.5 * hexagonRadius) - zOffset,
+      //      ];
+      //      i++;
+      //    }
+      //  }
+      //};
+
+      // Hexes spread over a hexagon (size of hexagon dictated by `worldHexagonWidth`)
+      const getHexIterator = function*() {
+        let i = 0;
+
+        const middleRowWidth = worldHexagonWidth*2 - 1;
+        for (let j = 0; j < middleRowWidth; j++) {
+          yield [
+            i++,
+            (j - middleRowWidth / 2) * hexagonWidth,
+            0,
+          ];
+        }
+
+        for (let j = 1; j < worldHexagonWidth; j++) {
+          const rowWidth = middleRowWidth - j;
+          for (let k = 0; k < rowWidth; k++) {
+            yield [
+              i++,
+              (k - rowWidth / 2) * hexagonWidth,
+              j * (1.5 * hexagonRadius)
+            ];
+            yield [
+              i++,
+              (k - rowWidth / 2) * hexagonWidth,
+              -j * (1.5 * hexagonRadius)
+            ];
+          }
+        }
+      };
+
+      const generateHeightmap = function() {
+        simplex = new SimplexNoise();
+        const hexagonHeights = new Array(hexagonCount);
+        for (const [i, x, z] of getHexIterator()) {
+          //hexagonHeights[i] = randomNoise() * hexagonMaxHeight;
+          //hexagonHeights[i] = sinCosNoise(x, y) * hexagonMaxHeight;
+          hexagonHeights[i] = simplexNoise(x, z) * hexagonMaxHeight;
+        }
+        return hexagonHeights;
+      }
+
+      let heightmap = generateHeightmap();
+
+      const addLighting = function(scene) {
+        const hemisphereLight = new THREE.HemisphereLight(0xffffbb, 0x080820, 1.5);
+        scene.add(hemisphereLight);
+        return [hemisphereLight];
+
+        //const pointLight = new THREE.PointLight(0xffffff, 2, 100, 2);
+        //pointLight.position.set(0, 25, 0);
+        //pointLight.castShadow = true;
+        //scene.add(pointLight);
+        //return [pointLight];
+      }
+
+      const groundMatrix = function(i, x, z) {
+        const hexagonHeight = heightmap[i];
+        const y = hexagonHeight / 2;
+
+        const m = new THREE.Matrix4();
+        const position = new THREE.Vector3(
+          x,
+          y,
+          z,
+        );
+        const quaternion = new THREE.Quaternion();
+        //const rotation = new THREE.Euler();
+        //quaternion.setFromEuler(rotation);
+        const scale = new THREE.Vector3(
+          1,
+          hexagonHeight,
+          1
+        );
+
+        m.compose(position, quaternion, scale);
+
+        return m;
+      }
+
+      const groundColor = function(i) {
+        const hexagonHeight = heightmap[i];
+
+        if (hexagonHeight < waterBeachHeight*hexagonMaxHeight) {
+          return underwaterColor;
+        } else if (hexagonHeight < beachGrassHeight*hexagonMaxHeight) {
+          return beachColor;
+        } else if (hexagonHeight < grassMountainHeight*hexagonMaxHeight) {
+          return grassColor;
+        } else {
+          return mountainColor;
+        }
+      }
+
+      const addGround = function(scene) {
+        const material = new THREE.MeshStandardMaterial();
+        //const material = new THREE.MeshBasicMaterial();
+        //material.wireframe = true;
+
+        const geometry = new THREE.CylinderGeometry(hexagonRadius, hexagonRadius, 1, 6, 1);
+        const mesh = new THREE.InstancedMesh(geometry, material, hexagonCount);
+        mesh.castShadow = false;
+        mesh.receiveShadow = true;
+        mesh.matrixAutoUpdate = false;
+
+        scene.add(mesh);
+        return mesh;
+      }
+
+      const hexagonWaterMatrix = function(i, x, z) {
+        const hexagonBelowHeight = heightmap[i];
+
+        let noise = simplex.noise3d(x/waveGranularity, z/waveGranularity, ticker) * waveScale;
+
+        const yScale = Math.max(0, hexagonMaxHeight*waterLevel - hexagonBelowHeight + noise);
+
+        const y = hexagonBelowHeight + yScale/2;
+
+        const m = new THREE.Matrix4();
+        const position = new THREE.Vector3(
+          x,
+          y,
+          z,
+        );
+        const quaternion = new THREE.Quaternion();
+        //const rotation = new THREE.Euler();
+        //quaternion.setFromEuler(rotation);
+        const scale = new THREE.Vector3(
+          (yScale == 0 ? 0 : 1),
+          yScale,
+          (yScale == 0 ? 0 : 1)
+        );
+
+        m.compose(position, quaternion, scale);
+        return m;
+      };
+
+      const addHexagonWater = function(scene) {
+        const waterMaterial = new THREE.MeshStandardMaterial();
+        //const waterMaterial = new THREE.MeshBasicMaterial();
+        waterMaterial.transparent = waterOpacity;
+        waterMaterial.opacity = 0.8;
+
+        const geometry = new THREE.CylinderGeometry(hexagonRadius, hexagonRadius, 1, 6, 1);
+        const waterMesh = new THREE.InstancedMesh(geometry, waterMaterial, hexagonCount);
+        //waterMesh.castShadow = true;
+        waterMesh.receiveShadow = false;
+
+        scene.add(waterMesh);
+        return waterMesh;
+      }
+
+      const setInstanceAttributes = function(groundMesh, waterMesh) {
+        for (const [i, x, z] of getHexIterator()) {
+          groundMesh.setMatrixAt(i, groundMatrix(i, x, z));
+          groundMesh.setColorAt(i, groundColor(i));
+
+          waterMesh.setMatrixAt(i, hexagonWaterMatrix(i, x, z));
+          const waterColor = new THREE.Color(waterDeepColor.getHex());
+          waterColor.lerp(waterShallowColor, heightmap[i]/hexagonMaxHeight);
+          waterMesh.setColorAt(i, waterColor);
+        }
+        groundMesh.instanceColor.needsUpdate = true;
+        groundMesh.instanceMatrix.needsUpdate = true;
+        waterMesh.instanceColor.needsUpdate = true;
+        waterMesh.instanceMatrix.needsUpdate = true;
+      };
+
+      if (WebGL.isWebGLAvailable()) {
+
+        const renderer = new THREE.WebGLRenderer({
+          alpha: false,
+          stencil: false,
+          antialias: true,
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        //renderer.shadowMap.enabled = true;
+        //renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 500);
+
+        function onWindowResize() {
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+
+          renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+        window.addEventListener('resize', onWindowResize, false);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        camera.position.set(100, 65, 100);
+        //const controls = new FirstPersonControls(camera, renderer.domElement);
+        //camera.position.set(0, 40, 0);
+        //controls.update();
+
+        const scene = new THREE.Scene();
+
+        const lights = addLighting(scene);
+
+        let groundMesh;
+        let waterMesh;
+
+        const disposeSceneObject = function(obj) {
+          if (obj) {
+            obj.geometry.dispose();
+            obj.material.dispose();
+            scene.remove(obj);
+          }
+        };
+
+        const generateHexes = function(shouldRegenerateHeightmap) {
+          disposeSceneObject(groundMesh);
+          disposeSceneObject(waterMesh);
+
+          if (shouldRegenerateHeightmap) {
+            heightmap = generateHeightmap();
+          }
+
+          groundMesh = addGround(scene, heightmap);
+          waterMesh = addHexagonWater(scene, heightmap);
+
+          setInstanceAttributes(groundMesh, waterMesh);
+        };
+        generateHexes(false);
+        setInstanceAttributes(groundMesh, waterMesh);
+
+        //const hexagonalCylinder = new THREE.Mesh(geometry, material);
+        //scene.add(hexagonalCylinder);
+
+        //const wireframeGeometry = new THREE.WireframeGeometry(geometry);
+        //const wireframeLines = new THREE.LineSegments(wireframeGeometry);
+        //wireframeLines.material.depthTest = false;
+        //wireframeLines.material.opacity = 0.25;
+        //wireframeLines.material.transparent = true;
+        //scene.add(wireframeLines);
+
+        // GUI
+
+        const stats = new Stats();
+        document.body.appendChild(stats.dom);
+
+        const gui = new GUI(),
+          generalFolder = gui.addFolder('General'),
+          groundFolder = gui.addFolder('Ground'),
+          waterFolder = gui.addFolder('Water'),
+          props = {
+            //get 'Hexagon count'() {
+            //  return hexagonCount;
+            //},
+            //set 'Hexagon count'(v) {
+            //  hexagonCount = v;
+            //  generateHexes();
+            //},
+            get 'World hexagon width'() {
+              return worldHexagonWidth;
+            },
+            set 'World hexagon width'(v) {
+              const newWidth = Math.round(v);
+              if (newWidth != worldHexagonWidth) {
+                worldHexagonWidth = newWidth;
+                hexagonCount = hexagonCountFromHexWidth(worldHexagonWidth);
+                console.log(worldHexagonWidth, hexagonCount);
+                generateHexes(true);
+              }
+            },
+            get 'Hexagon height'() {
+              return hexagonMaxHeight;
+            },
+            set 'Hexagon height'(v) {
+              hexagonMaxHeight = v;
+              generateHexes();
+            },
+            get 'Heightmap noise scale'() {
+              return heightmapNoiseScale;
+            },
+            set 'Heightmap noise scale'(v) {
+              heightmapNoiseScale = v;
+              generateHexes(true);
+            },
+            get 'Underwater color'() {
+              return '#' + underwaterColor.getHexString();
+            },
+            set 'Underwater color'(v) {
+              underwaterColor = new THREE.Color(v);
+              generateHexes();
+            },
+            get 'Water-Beach height'() {
+              return waterBeachHeight;
+            },
+            set 'Water-Beach height'(v) {
+              waterBeachHeight = v;
+              setInstanceAttributes(groundMesh, waterMesh);
+            },
+            get 'Beach color'() {
+              return '#' + beachColor.getHexString();
+            },
+            set 'Beach color'(v) {
+              beachColor = new THREE.Color(v);
+              generateHexes();
+            }, 
+            get 'Beach-Grass height'() {
+              return beachGrassHeight;
+            },
+            set 'Beach-Grass height'(v) {
+              beachGrassHeight = v;
+              setInstanceAttributes(groundMesh, waterMesh);
+            },
+            get 'Grass color'() {
+              return '#' + grassColor.getHexString();
+            },
+            set 'Grass color'(v) {
+              grassColor = new THREE.Color(v);
+              generateHexes();
+            },
+            get 'Grass-Mountain height'() {
+              return grassMountainHeight;
+            },
+            set 'Grass-Mountain height'(v) {
+              grassMountainHeight = v;
+              setInstanceAttributes(groundMesh, waterMesh);
+            },
+            get 'Mountain color'() {
+              return '#' + mountainColor.getHexString();
+            },
+            set 'Mountain color'(v) {
+              mountainColor = new THREE.Color(v);
+              generateHexes();
+            },
+            'Rerender': function() {
+              generateHexes(true);
+            },
+            get 'Water level'() {
+              return waterLevel;
+            },
+            set 'Water level'(v) {
+              waterLevel = v;
+            },
+            get 'Tick speed'() {
+              return tickSpeed;
+            },
+            set 'Tick speed'(v) {
+              tickSpeed = v;
+            },
+            get 'Wave scale'() {
+              return waveScale;
+            },
+            set 'Wave scale'(v) {
+              waveScale = v;
+            },
+            get 'Wave granularity'() {
+              return 101 - waveGranularity;
+            },
+            set 'Wave granularity'(v) {
+              waveGranularity = 101 - v;
+            },
+            get 'Water deep color'() {
+              return '#' + waterDeepColor.getHexString();
+            },
+            set 'Water deep color'(v) {
+              waterDeepColor = new THREE.Color(v);
+              generateHexes();
+            },
+            get 'Water shallow color'() {
+              return '#' + waterShallowColor.getHexString();
+            },
+            set 'Water shallow color'(v) {
+              waterShallowColor = new THREE.Color(v);
+              generateHexes();
+            },
+            get 'Opaque waters'() {
+              return waterOpacity;
+            },
+            set 'Opaque waters'(v) {
+              waterOpacity = v;
+              generateHexes();
+            },
+          };
+        generalFolder.add(props, 'World hexagon width', 1, 32);
+        //generalFolder.add(props, 'Hexagon count', 1, 2048);
+        generalFolder.add(props, 'Hexagon height', 1, 128);
+        generalFolder.add(props, 'Heightmap noise scale', 0, 0.1);
+        groundFolder.addColor(props, 'Underwater color');
+        groundFolder.add(props, 'Water-Beach height', 0, 1);
+        groundFolder.addColor(props, 'Beach color');
+        groundFolder.add(props, 'Beach-Grass height', 0, 1);
+        groundFolder.addColor(props, 'Grass color');
+        groundFolder.add(props, 'Grass-Mountain height', 0, 1);
+        groundFolder.addColor(props, 'Mountain color');
+        gui.add(props, 'Rerender');
+        waterFolder.add(props, 'Water level', 0, 1);
+        waterFolder.add(props, 'Tick speed', 0.01, 1.0);
+        waterFolder.add(props, 'Wave granularity', 1, 100);
+        waterFolder.add(props, 'Wave scale', 0, hexagonMaxHeight/3);
+        waterFolder.addColor(props, 'Water deep color');
+        waterFolder.addColor(props, 'Water shallow color');
+        waterFolder.add(props, 'Opaque waters');
+
+        const clock = new THREE.Clock();
+
+        function animate() {
+          requestAnimationFrame(animate);
+
+          const delta = clock.getDelta();
+
+          // Skip setting water color when animating
+          for (const [i, x, z] of getHexIterator()) {
+            const m = hexagonWaterMatrix(i, x, z, heightmap);
+            waterMesh.setMatrixAt(i, m);
+          }
+          waterMesh.instanceMatrix.needsUpdate = true;
+          ticker += tickSpeed*delta;
+
+          controls.update(delta);
+
+          renderer.render(scene, camera);
+          stats.update();
+        }
+
+        animate();
+
+        //renderer.render(scene, camera);
+
+      } else {
+
+        const warning = WebGL.getWebGLErrorMessage();
+        document.body.appendChild(warning);
+
+      }
+    </script>
+  </body>
+</html>
