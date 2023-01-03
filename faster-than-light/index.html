@@ -1,24 +1,24 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="utf-8">
-		<title>Faster Than Light | GFX | Viktor Alex</title>
-		<style>
-			body { margin: 0; }
-		</style>
-	</head>
-	<body>
-		<script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
-		<script type="importmap">
-			{
-				"imports": {
-					"three": "https://unpkg.com/three@0.148.0/build/three.module.js",
-					"three/addons/": "https://unpkg.com/three@0.148.0/examples/jsm/"
-				}
-			}
-		</script>
+  <head>
+    <meta charset="utf-8">
+    <title>Faster Than Light | GFX | Viktor Alex</title>
+    <style>
+      body { margin: 0; }
+    </style>
+    <script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.148.0/build/three.module.js",
+          "three/addons/": "https://unpkg.com/three@0.148.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
 
-		<script type="module">
+    <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
@@ -49,16 +49,16 @@ const mesh = new THREE.InstancedMesh(geometry, material, count);
 const quaternion = new THREE.Quaternion();
 const matrix = new THREE.Matrix4();
 for (let i = 0; i < count; i++) {
-	const scale = Math.random();
+  const scale = Math.random();
 
-	//quaternion.setFromEuler(new THREE.Euler(0, 1, 1.57));
-	matrix.compose(
-		new THREE.Vector3(Math.random() * 5 - 2.5, Math.random() * 5 - 2.5, Math.random() * 5 - 2.5),
-		quaternion,
-		new THREE.Vector3(scale, scale, scale)
-	);
+  //quaternion.setFromEuler(new THREE.Euler(0, 1, 1.57));
+  matrix.compose(
+    new THREE.Vector3(Math.random() * 5 - 2.5, Math.random() * 5 - 2.5, Math.random() * 5 - 2.5),
+    quaternion,
+    new THREE.Vector3(scale, scale, scale)
+  );
 
-	mesh.setMatrixAt(i, matrix);
+  mesh.setMatrixAt(i, matrix);
 }
 
 
@@ -73,6 +73,6 @@ function animate() {
 }
 animate();
 
-		</script>
-	</body>
+    </script>
+  </body>
 </html>
