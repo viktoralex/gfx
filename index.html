@@ -2,19 +2,92 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>GFX | Viktor Alex</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
   </head>
   <body>
-    <h1>GFX</h1>
-    <p>Graphics experiments I've done.</p>
-    <ul>
-      <li><a href="/threejs-creating-a-scene">three.js documentation | Creating a scene</a></li>
-      <li><a href="/hexagonal-gameboard">Procedurally generated hexagonal gameboard</a></li>
-    </ul>
-    <h2>In progress</h2>
-    <p>Experiments I'm currently working on.</p>
-    <ul>
-      <li><a href="/faster-than-light">Faster than light effect (like Star Trek or Orville)</a></li>
-    </ul>
+    <section class="section is-medium">
+      <div class="container">
+        <section class="section">
+          <h1 class="title is-1">GFX</h1>
+          <p class="subtitle">Here's a few graphics experiments I've done.</p>
+          <div class="columns">
+            <div class="column is-half">
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-header-title">
+                    THREE.js documentation | Creating a scene
+                  </div>
+                </div>
+                <div class="card-image">
+                  <figure class="image is-4by3">
+                    <img src="/img/threejs-creating-a-scene.png" alt="Three dimensional green cube on black background">
+                  </figure>
+                </div>
+                <div class="card-content">
+                  <div class="content">
+                    Just an implementation of the <a href="https://threejs.org/docs/#manual/en/introduction/Creating-a-scene" target="_blank">"Creating a scene"</a> page from the THREE.js documentation.
+                  </div>
+                </div>
+                <div class="card-footer">
+                  <a class="card-footer-item" href="/threejs-creating-a-scene">View</a>
+                  <a class="card-footer-item" href="https://github.com/viktoralex/gfx/blob/main/threejs-creating-a-scene/index.html">Code</a>
+                </div>
+              </div>
+            </div>
+            <div class="column is-half">
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-header-title">
+                    Procedurally generated hexagonal gameboard
+                  </div>
+                </div>
+                <div class="card-image">
+                  <figure class="image is-4by3">
+                    <img src="/img/hexagonal-gameboard.png" alt="Three dimensional terrain made up of hexagonal patterned columns">
+                  </figure>
+                </div>
+                <div class="card-content">
+                  <div class="content">
+                    I wanted to experiment using noise to procedurally generate terrain. I thought it would look cool with hexagonal tiles. I used the height of each tile to determine whether they should be underwater, beach, grass or mountain coloured. I also used noise to generate waves for the water.
+                  </div>
+                </div>
+                <div class="card-footer">
+                  <a class="card-footer-item" href="/hexagonal-gameboard">View</a>
+                  <a class="card-footer-item" href="https://github.com/viktoralex/gfx/blob/main/hexagonal-gameboard/index.html">Code</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <section class="section">
+          <h2 class="title is-3">In progress</h2>
+          <p class="subtitle">I'm currently working on these...</p>
+          <div class="columns">
+            <div class="column is-half">
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-header-title">
+                    Faster than light effect
+                  </div>
+                </div>
+                <div class="card-content">
+                  <div class="content">
+                    Trying to replicate the effects from Star Trek and Orville when the ships are moving faster than light.
+                  </div>
+                </div>
+                <div class="card-footer">
+                  <a class="card-footer-item" href="/faster-than-light">View</a>
+                  <a class="card-footer-item" href="https://github.com/viktoralex/gfx/blob/main/faster-than-light/index.html">Code</a>
+                </div>
+              </div>
+            </div>
+            <div class="column is-half">
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
   </body>
 </html>
