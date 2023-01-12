@@ -79,15 +79,11 @@
           discard;
         }
 
-        gl_FragColor = vec4(vColor, 1.0);
-        /*
         gl_FragColor = mix(
+          vec4(vColor, 1.0),
           vec4(1.0, 1.0, 1.0, 1.0),
-          vec4(1.0, 0.0, 1.0, 1.0),
-          vStretch
+          1.0 / vStretch
         );
-        */
-        //gl_FragColor = vec4(vPos.x, vPos.y, vPos.z, 1.0);
       }
     </script>
 
