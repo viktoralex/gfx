@@ -223,7 +223,7 @@ scene.add(starMesh);
 
 
 const loader = new GLTFLoader();
-loader.load('/assets/models/uss_enterprise_d_star_trek_tng.glb', function(gltf) {
+loader.load('https://media.githubusercontent.com/media/viktoralex/gfx/main/assets/models/uss_enterprise_d_star_trek_tng.glb', function(gltf) {
 
   const shipScale = new THREE.Matrix4();
   shipScale.makeScale(0.08, 0.08, 0.08);
