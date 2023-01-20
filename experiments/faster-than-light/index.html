@@ -92,27 +92,33 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import Stats from 'three/addons/libs/stats.module.js';
 import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 const stats = new Stats();
 
 // Settings
-let speed = 3;
+let speed = 5;
 
 let starSize = 0.05;
 
 let drawDistance = 100;
-let wrapAroundDistance = 15;
-let totalStars = 25000;
+let wrapAroundDistance = 35;
+let totalStars = 20000;
 
-let closeStarsRatio = 0.02;
+let closeStarsRatio = 0.06;
 
-let minStarDistance = 0.1;
+let minStarDistance = 0.4;
 let closeFarDistanceRatio = 0.1;
-let maxStarDistance = 20.0;
+let maxStarDistance = 35;
 
 // Renderer
-const renderer = new THREE.WebGLRenderer({ antialias: false });
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1;
+renderer.outputEncoding = THREE.sRGBEncoding;
 document.body.appendChild(renderer.domElement);
 
 // Camera
@@ -127,10 +133,16 @@ window.addEventListener('resize', onWindowResize);
 
 // Camera controls
 const controls = new OrbitControls(camera, renderer.domElement);
-camera.position.set(-0.1, 0.05, 0.5);
+camera.position.set(-0.3, 0.3, 1.5);
 
 // Scene
 const scene = new THREE.Scene();
+
+const environment = new RoomEnvironment();
+const pmremGenerator = new THREE.PMREMGenerator(renderer);
+
+scene.background = new THREE.Color(0x000000);
+scene.environment = pmremGenerator.fromScene(environment).texture;
 
 const starGeometry = new THREE.IcosahedronGeometry(starSize, 0);
 //const starGeometry = new THREE.OctahedronGeometry(0.01, 0);
@@ -198,10 +210,42 @@ scene.add(starMesh);
 //const axesHelper = new THREE.AxesHelper(0.5);
 //scene.add(axesHelper);
 
-const geometry = new THREE.BoxGeometry( 0.08, 0.08, 0.08 );
-const material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: true } );
-const cube = new THREE.Mesh( geometry, material );
-scene.add( cube );
+//const geometry = new THREE.BoxGeometry( 1, 1, 1 );
+//const material = new THREE.MeshBasicMaterial( { color: 0x00ff00, wireframe: true } );
+//const cube = new THREE.Mesh( geometry, material );
+//scene.add( cube );
+
+//const light = new THREE.DirectionalLight(0xffffff, 0.1);
+//scene.add(light);
+
+//const light = new THREE.AmbientLight(0x666666);
+//scene.add(light);
+
+
+const loader = new GLTFLoader();
+loader.load('/assets/enterprise-1701-d/uss_enterprise_d_star_trek_tng.glb', function(gltf) {
+
+  const shipScale = new THREE.Matrix4();
+  shipScale.makeScale(0.08, 0.08, 0.08);
+  gltf.scene.applyMatrix4(shipScale);
+  gltf.scene.setRotationFromEuler(new THREE.Euler(Math.PI, 0, Math.PI));
+
+  console.dir(gltf.scene);
+  gltf.scene.traverse(child => {
+    if (child.material) {
+      child.material.reflectivity = 0;
+      child.material.metalness = 0;
+    }
+  });
+
+  scene.add(gltf.scene);
+
+  light.target = gltf.scene;
+  light2.target = gltf.scene;
+
+}, undefined, function(error) {
+  console.error(error);
+});
 
 
 // Animation
