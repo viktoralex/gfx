@@ -230,14 +230,6 @@ loader.load('https://media.githubusercontent.com/media/viktoralex/gfx/main/asset
   gltf.scene.applyMatrix4(shipScale);
   gltf.scene.setRotationFromEuler(new THREE.Euler(Math.PI, 0, Math.PI));
 
-  console.dir(gltf.scene);
-  gltf.scene.traverse(child => {
-    if (child.material) {
-      child.material.reflectivity = 0;
-      child.material.metalness = 0;
-    }
-  });
-
   scene.add(gltf.scene);
 
   light.target = gltf.scene;
