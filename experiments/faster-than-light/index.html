@@ -218,22 +218,19 @@ scene.add(starMesh);
 //const light = new THREE.DirectionalLight(0xffffff, 0.1);
 //scene.add(light);
 
-//const light = new THREE.AmbientLight(0x666666);
-//scene.add(light);
-
 
 const loader = new GLTFLoader();
-loader.load('https://media.githubusercontent.com/media/viktoralex/gfx/main/assets/models/uss_enterprise_d_star_trek_tng.glb', function(gltf) {
+loader.load('/assets/models/enterprise_ncc_1701_d/scene.gltf', function(gltf) {
 
   const shipScale = new THREE.Matrix4();
   shipScale.makeScale(0.08, 0.08, 0.08);
   gltf.scene.applyMatrix4(shipScale);
+  const shipLocation = new THREE.Matrix4();
+  shipLocation.makeTranslation(3.533, -0.29, -0.8);
+  gltf.scene.applyMatrix4(shipLocation);
   gltf.scene.setRotationFromEuler(new THREE.Euler(Math.PI, 0, Math.PI));
 
   scene.add(gltf.scene);
-
-  light.target = gltf.scene;
-  light2.target = gltf.scene;
 
 }, undefined, function(error) {
   console.error(error);

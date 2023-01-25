@@ -1,0 +1,11 @@
+Model Information:
+* title:	Enterprise NCC 1701 D
+* source:	https://sketchfab.com/3d-models/enterprise-ncc-1701-d-6f05e0d3448146a6a65ff2cf6c28040e
+* author:	morenostefanuto (https://sketchfab.com/morenostefanuto)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Enterprise NCC 1701 D" (https://sketchfab.com/3d-models/enterprise-ncc-1701-d-6f05e0d3448146a6a65ff2cf6c28040e) by morenostefanuto (https://sketchfab.com/morenostefanuto) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

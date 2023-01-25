@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Animated Spiral | GFX | Viktor Alex</title>
+    <style>
+      body { margin: 0; }
+    </style>
+    <script async src="https://unpkg.com/es-module-shims@1.3.6/dist/es-module-shims.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.148.0/build/three.module.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+
+    <script id="vertex-shader" type="x-shader/x-vertex">
+      varying vec3 vPos;
+      varying vec3 vColor;
+
+      uniform float uTime;
+
+      void main() {
+        vPos = position;
+        vColor = color;
+
+        mat4 translate = mat4(0.0);
+        translate[0][0] = 1.0;
+        translate[1][1] = 1.0;
+        translate[2][2] = 1.0;
+        translate[3][3] = 1.0;
+
+        gl_Position = projectionMatrix * viewMatrix * instanceMatrix * vec4(position, 1.0);
+      }
+    </script>
+
+    <script id="fragment-shader" type="x-shader/x-fragment">
+      varying vec3 vPos;
+      varying vec3 vColor;
+
+      void main() {
+        //gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+        gl_FragColor = vec4(vColor, 1.0);
+      }
+    </script>
+    <script type="module">
+import * as THREE from 'three';
+
+const renderer = new THREE.WebGLRenderer({
+  antialias: true,
+});
+renderer.setSize( window.innerWidth, window.innerHeight );
+document.body.appendChild( renderer.domElement );
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xffffff);
+
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+
+  renderer.setSize(window.innerWidth, window.innerHeight);
+}
+window.addEventListener('resize', onWindowResize);
+
+camera.position.set(0, 0, 185);
+
+const count = 20;
+const radius = 100;
+const size = 5;
+
+const geometry = new THREE.OctahedronGeometry(1, 0);
+const points = geometry.attributes.position;
+geometry.setAttribute('color', new THREE.BufferAttribute(new Float32Array(points.count * 3), 3));
+
+const color = new THREE.Color();
+const colors = geometry.attributes.color;
+for (let i = 0; i < points.count; i++) {
+  color.setHSL((points.getY(i) / 1) / 2, 1.0, 0.8);
+  colors.setXYZ(i, color.r, color.g, color.b);
+}
+/*
+const material = new THREE.MeshBasicMaterial({
+  color: 0x00ff00,
+  wireframe: true,
+});
+*/
+const shaderUniforms = {
+  uTime: { type: 'f', value: 0.0 },
+};
+const material = new THREE.ShaderMaterial({
+  vertexShader: document.getElementById('vertex-shader').textContent,
+  fragmentShader: document.getElementById('fragment-shader').textContent,
+  uniforms: shaderUniforms,
+  vertexColors: true,
+});
+
+const mesh = new THREE.InstancedMesh(geometry, material, count);
+
+const matrix = new THREE.Matrix4();
+const quaternion = new THREE.Quaternion();
+
+const position = new THREE.Vector3();
+const rotation = new THREE.Euler();
+const scale = new THREE.Vector3();
+
+for (let i = 0; i < count; i++) {
+  const step = i/count;
+
+  const rad = step*Math.PI*2;
+
+  // distance from center, spiral rotational offset, ???
+  position.set(Math.sin(rad)*(step*radius), Math.cos(rad)*(step*radius), 0);
+  rotation.set(rad, 0, 0);
+  //rotation.set(0, 0, 0);
+  scale.set(size, size, size);
+
+  quaternion.setFromEuler(rotation);
+  matrix.compose(
+    position,
+    quaternion,
+    scale
+  );
+
+  mesh.setMatrixAt(
+    i,
+    matrix
+  );
+}
+
+//const mesh = new THREE.Mesh(geometry, material);
+scene.add(mesh);
+
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+
+  material.uniforms.uTime.value = clock.elapsedTime;
+
+  renderer.render(scene, camera);
+}
+animate();
+
+    </script>
+  </body>
+</html>
