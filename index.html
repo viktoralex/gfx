@@ -12,9 +12,32 @@
         <section class="section">
           <h1 class="title is-1">GFX</h1>
           <div class="content">
-            <p>This page contains some of my experiments with computer generated graphics. I’ve done a little work in WebGL but for the experiments below I wanted to use a library. Mainly because then I could implement them quicker but also to keep me from the temptation of creating my own library. I chose <a href="https://threejs.org/" target="_blank">THREE.js</a> because it seemed the most popular. After using it for a little bit I can see why. It lets you start off with a very basic scene and expand from there, making experimentation super fun. </p>
+            <p>This page contains some of my experiments with computer generated graphics. I've been using different libraries but I've stuck to things that run in the browser. I've used <a href="https://threejs.org/" target="_blank">THREE.js</a>, <a href="https://p5js.org/" target="_blank">p5.js</a> and <a href="https://www.shadertoy.com/" target="_blank">shadertoy</a>.</p>
           </div>
           <div class="columns is-multiline">
+            <div class="column is-half">
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-header-title">
+                    Dancing Noise Line v2
+                  </div>
+                </div>
+                <div class="card-image">
+                  <figure class="image is-4by3">
+                    <img src="/assets/img/dancing_noise_line_v2.png" alt="Five lines bending and curving prettily">
+                  </figure>
+                </div>
+                <div class="card-content">
+                  <div class="content">
+                    I was testing out the noise function in p5.js and ended up with a dancing line. To make the effect prettier I made the background colour semi-transparent which gave the line some more interest and then I added a few more lines.
+                  </div>
+                </div>
+                <div class="card-footer">
+                  <a class="card-footer-item" href="https://editor.p5js.org/viktoralex/full/KxwDj21K5"><ion-icon name="eye-outline"></ion-icon>&nbsp;View</a>
+                  <a class="card-footer-item" href="https://editor.p5js.org/viktoralex/sketches/KxwDj21K5"><ion-icon name="code-slash-outline"></ion-icon>&nbsp;Code</a>
+                </div>
+              </div>
+            </div>
             <div class="column is-half">
               <div class="card">
                 <div class="card-header">
@@ -42,6 +65,75 @@
               <div class="card">
                 <div class="card-header">
                   <div class="card-header-title">
+                    Basic Spiral Phyllotaxis
+                  </div>
+                </div>
+                <div class="card-image">
+                  <figure class="image is-4by3">
+                    <img src="/assets/img/basic_spiral_phyllotaxis.png" alt="Multicoloured dots spread out in a phyllotaxis pattern">
+                  </figure>
+                </div>
+                <div class="card-content">
+                  <div class="content">
+                    A cool looking spiral with ratios found in nature. Directly inspired from the <a href="https://thecodingtrain.com/tracks/algorithmic-botany/30-phyllotaxis">codingtrain</a>.
+                  </div>
+                </div>
+                <div class="card-footer">
+                  <a class="card-footer-item" href="https://editor.p5js.org/viktoralex/full/P4tZ1XALi"><ion-icon name="eye-outline"></ion-icon>&nbsp;View</a>
+                  <a class="card-footer-item" href="https://editor.p5js.org/viktoralex/sketches/P4tZ1XALi"><ion-icon name="code-slash-outline"></ion-icon>&nbsp;Code</a>
+                </div>
+              </div>
+            </div>
+            <div class="column is-half">
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-header-title">
+                    Ulam Spiral
+                  </div>
+                </div>
+                <div class="card-image">
+                  <figure class="image is-4by3">
+                    <img src="/assets/img/ulam_spiral.png" alt="Integers represented as dots shown spiraling out from 1 in the middle. Prime number dots are larger.">
+                  </figure>
+                </div>
+                <div class="card-content">
+                  <div class="content">
+                    My take on drawing an <a href="https://en.wikipedia.org/wiki/Ulam_spiral">ulam spiral</a>. Directly inspired from the <a href="https://thecodingtrain.com/challenges/167-prime-spiral">codingtrain</a>.
+                  </div>
+                </div>
+                <div class="card-footer">
+                  <a class="card-footer-item" href="https://editor.p5js.org/viktoralex/full/VM9UxTmf5"><ion-icon name="eye-outline"></ion-icon>&nbsp;View</a>
+                  <a class="card-footer-item" href="https://editor.p5js.org/viktoralex/sketches/VM9UxTmf5"><ion-icon name="code-slash-outline"></ion-icon>&nbsp;Code</a>
+                </div>
+              </div>
+            </div>
+            <div class="column is-half">
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-header-title">
+                    Moiré Swirling Noisily
+                  </div>
+                </div>
+                <div class="card-image">
+                  <figure class="image is-4by3">
+                    <img src="/assets/img/moire_swirling_noisily.png" alt="Two shapes interacting and creating a moiré effect">
+                  </figure>
+                </div>
+                <div class="card-content">
+                  <div class="content">
+                    I've always been facinated by the <a href="https://en.wikipedia.org/wiki/Moir%C3%A9_pattern">Moiré pattern</a>. I created a thing were two patterns are moving randomly and made the patterns editable.
+                  </div>
+                </div>
+                <div class="card-footer">
+                  <a class="card-footer-item" href="https://editor.p5js.org/viktoralex/full/94-Ih56lG"><ion-icon name="eye-outline"></ion-icon>&nbsp;View</a>
+                  <a class="card-footer-item" href="https://editor.p5js.org/viktoralex/sketches/94-Ih56lG"><ion-icon name="code-slash-outline"></ion-icon>&nbsp;Code</a>
+                </div>
+              </div>
+            </div>
+            <div class="column is-half">
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-header-title">
                     Faster than light effect
                   </div>
                 </div>
@@ -59,6 +151,29 @@
                 <div class="card-footer">
                   <a class="card-footer-item" href="/experiments/faster-than-light"><ion-icon name="eye-outline"></ion-icon>&nbsp;View</a>
                   <a class="card-footer-item" href="https://github.com/viktoralex/gfx/blob/main/experiments/faster-than-light/index.html"><ion-icon name="code-slash-outline"></ion-icon>&nbsp;Code</a>
+                </div>
+              </div>
+            </div>
+            <div class="column is-half">
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-header-title">
+                    ASCII webcam
+                  </div>
+                </div>
+                <div class="card-image">
+                  <figure class="image is-4by3">
+                    <img src="/assets/img/ascii_webcam.png" alt="A webcam window where the image is represented using ASCII letters rather than coloured pixels">
+                  </figure>
+                </div>
+                <div class="card-content">
+                  <div class="content">
+                    Made by following along to the <a href="https://thecodingtrain.com/challenges/166-image-to-ascii">codingtrain</a>.
+                  </div>
+                </div>
+                <div class="card-footer">
+                  <a class="card-footer-item" href="https://editor.p5js.org/viktoralex/full/IQdCIJu7b"><ion-icon name="eye-outline"></ion-icon>&nbsp;View</a>
+                  <a class="card-footer-item" href="https://editor.p5js.org/viktoralex/sketches/IQdCIJu7b"><ion-icon name="code-slash-outline"></ion-icon>&nbsp;Code</a>
                 </div>
               </div>
             </div>
